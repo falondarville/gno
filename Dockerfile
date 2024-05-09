@@ -1,26 +1,31 @@
 # build gno
 FROM        golang:1.22 AS build-gno
+RUN         go env -w GOMODCACHE=/root/.cache/go-build
 RUN         mkdir -p /opt/gno/src /opt/build
 WORKDIR     /opt/build
 ADD         go.mod go.sum .
-RUN         go mod download
+RUN         --mount=type=cache,target=/root/.cache/go-build       go mod download
 ADD         . ./
-RUN         go build -o ./build/gnoland   ./gno.land/cmd/gnoland
-RUN         go build -o ./build/gnokey    ./gno.land/cmd/gnokey
-RUN         go build -o ./build/gnoweb    ./gno.land/cmd/gnoweb
-RUN         go build -o ./build/gno       ./gnovm/cmd/gno
+RUN         --mount=type=cache,target=/root/.cache/go-build       go build -o ./build/gnoland   ./gno.land/cmd/gnoland
+RUN         --mount=type=cache,target=/root/.cache/go-build       go build -o ./build/gnokey    ./gno.land/cmd/gnokey
+RUN         --mount=type=cache,target=/root/.cache/go-build       go build -o ./build/gnoweb    ./gno.land/cmd/gnoweb
+RUN         --mount=type=cache,target=/root/.cache/go-build       go build -o ./build/gno       ./gnovm/cmd/gno
 RUN         ls -la ./build
 ADD         . /opt/gno/src/
 RUN         rm -rf /opt/gno/src/.git
 
 # build faucet
 FROM        golang:1.22 AS build-faucet
+RUN         go env -w GOMODCACHE=/root/.cache/go-build
+RUN         mkdir -p /opt/gno/src /opt/build
 RUN         mkdir -p /opt/gno/src /opt/build
 WORKDIR     /opt/build
 ADD         contribs/gnofaucet/go.mod contribs/gnofaucet/go.sum .
-RUN         go mod download
+# RUN         go mod download
+RUN         --mount=type=cache,target=/root/.cache/go-build       go mod download
 ADD         contribs/gnofaucet ./
-RUN         go build -o ./build/gnofaucet .
+# RUN         go build -o ./build/gnofaucet .
+RUN         --mount=type=cache,target=/root/.cache/go-build       go build -o ./build/gnofaucet .
 
 
 # runtime-base + runtime-tls
